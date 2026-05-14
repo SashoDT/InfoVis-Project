@@ -1,0 +1,108 @@
+/* Styling for the basic elements */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 24px;
+    background: #f5f7fa;
+    color: #222;
+}
+
+h1 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+}
+
+p {
+    margin-top: 0;
+    color: #555;
+}
+
+.main_container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    height: 82vh;
+    margin-top: 20px;
+}
+
+.left_panel,
+.top_right_panel,
+.bottom_right_panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.left_panel {
+    position: relative;
+    width: 65%;
+    height: 100%;
+}
+
+.right_panel {
+    width: 35%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.top_right_panel,
+.bottom_right_panel {
+    flex: 1;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* Styling for the map */
+#svg_map,
+#leaflet_map {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+#leaflet_map {
+    display: none;
+}
+
+#leaflet-back-button {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 1000;
+    padding: 8px 14px;
+    background: white;
+    border: 1px solid #d0d7de;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+#leaflet-back-button:hover {
+    background: #f3f4f6;
+}
+
+.city-point {
+    transition: r 0.15s ease, fill 0.15s ease;
+}
+
+.city-point:hover {
+    r: 9;
+    fill: #f59e0b;
+}
+
+.city-label {
+    font-size: 13px;
+    fill: #333;
+    pointer-events: none;
+    font-weight: 500;
+}
+
+.country {
+    fill: #eef1f4;
+    stroke: #c7ccd1;
+    stroke-width: 1;
+}

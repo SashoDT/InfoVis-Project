@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exploring European Airbnb Markets</title>
+
+    <link rel="stylesheet" type="text/css" href="static/css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/europeMap.js') }}"></script>
+    <!--<script src="{{ url_for('static', filename='js/cityComparison.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/listingSpider.js') }}"></script>-->
+</head>
+<body>
+
+<h1>Exploring European Airbnb Markets Through an Interactive Dashboard</h1>
+
+<div id="main_container" class="main_container">
+
+    <!-- Left side: main map area -->
+    <div id="left_panel" class="left_panel">
+        <svg id="svg_map"></svg>
+        <div id="leaflet_map"></div>
+    </div>
+
+    <!-- Right side -->
+    <div id="right_panel" class="right_panel">
+
+        <!-- Top right: selected listing detail -->
+        <div id="top_right_panel" class="top_right_panel">
+            <h3>Listing Details</h3>
+            <div id="listing_info">
+                <p>Select a listing to see details.</p>
+            </div>
+            <svg id="svg_spider"></svg>
+        </div>
+
+        <!-- Bottom right: city comparison -->
+        <div id="bottom_right_panel" class="bottom_right_panel">
+            <div id="comparison_controls" class="comparison_controls">
+                <label for="metric_select">City comparison metric:</label>
+                <select id="metric_select">
+                    <option value="median_price">Median Price</option>
+                    <option value="mean_price">Average Price</option>
+                    <option value="median_price_per_person">Median Price per Person</option>
+                    <option value="avg_guest_satisfaction">Average Guest Satisfaction</option>
+                    <option value="avg_cleanliness">Average Cleanliness</option>
+                    <option value="avg_value_score">Average Value Score</option>
+                    <option value="pct_superhost">Percent Superhost Listings</option>
+                </select>
+            </div>
+
+            <svg id="svg_city_comparison"></svg>
+        </div>
+
+    </div>
+</div>
+<div>
+    <p style="padding-top: 10px">
+    Visualization created by: Alexander Tashkov, David Köppl, Emma Minasyan
+    </p>
+</div>
+
+<script>
+    let cityData = {{ city_data | safe }};
+    let listingData = {{ listing_data | safe }};
+
+    initApp(cityData, listingData);
+</script>
+
+</body>
+</html>
