@@ -55,16 +55,22 @@ p {
     box-sizing: border-box;
 }
 
+.left_panel,
+.top_right_panel,
+.bottom_right_panel {
+    transition: box-shadow 0.2s ease;
+}
+
+.left_panel:hover,
+.top_right_panel:hover,
+.bottom_right_panel:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
 /* Styling for the map */
-#svg_map,
 #leaflet_map {
     width: 100%;
     height: 100%;
-    display: block;
-}
-
-#leaflet_map {
-    display: none;
 }
 
 #leaflet-back-button {
@@ -105,4 +111,40 @@ p {
     fill: #eef1f4;
     stroke: #c7ccd1;
     stroke-width: 1;
+}
+
+/* Right panel */
+.top_right_panel h3,
+.bottom_right_panel h3 {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 18px;
+    color: #1f2937;
+}
+
+#listing_info {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.comparison_controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.comparison_controls label {
+    font-weight: 600;
+    color: #374151;
+}
+
+#metric_select {
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    font-size: 14px;
 }

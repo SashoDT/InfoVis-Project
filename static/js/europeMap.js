@@ -2,133 +2,106 @@ let leafletMap = null;
 let leafletLayerGroup = null;
 
 function renderEuropeMap() {
-    showEuropeSvgView();
+    // Create the Leaflet map
+    ensureLeafletMap();
 
-    const oldButton = document.getElementById("leaflet-back-button");
-    if (oldButton) oldButton.remove();
+    // Clear old markers and layers
+    leafletLayerGroup.clearLayers();
+    // Remove the back button when in Europe view
+    removeBackButton();
+    // Center the map of Europe
+    leafletMap.setView([50, 10], 4);
 
-    const svg = d3.select("#svg_map");
-    const width = 900;
-    const height = 700;
+    // Hardcoded city center coordinates
+    const cityCoordinates = {
+        Amsterdam: {lat: 52.3676, lng: 4.9041},
+        Athens: {lat: 37.9838, lng: 23.7275},
+        Barcelona: {lat: 41.3874, lng: 2.1686},
+        Berlin: {lat: 52.5200, lng: 13.4050},
+        Budapest: {lat: 47.4979, lng: 19.0402},
+        Lisbon: {lat: 38.7223, lng: -9.1393},
+        London: {lat: 51.5072, lng: -0.1276},
+        Paris: {lat: 48.8566, lng: 2.3522},
+        Rome: {lat: 41.9028, lng: 12.4964},
+        Vienna: {lat: 48.2082, lng: 16.3738}
+    };
 
-    // Make the SVG scale nicely with the container
-    svg.attr("viewBox", `0 0 ${width} ${height}`);
-    // Clear when called
-    svg.selectAll("*").remove();
+    // Attach coords to city-level dataset
+    const cities = appState.cityData
+        .map(d => ({
+            ...d,
+            lat: cityCoordinates[d.city]?.lat,
+            lng: cityCoordinates[d.city]?.lng
+        }))
+        .filter(d => d.lat !== undefined && d.lng !== undefined);
 
-    // Set projection so Europe fits into the SVG
-    const projection = d3.geoMercator()
-        .center([10, 50])
-        .scale(700)
-        .translate([width / 2, height / 2]);
+    // Add one marker per city
+    cities.forEach(city => {
+        const marker = L.circleMarker([city.lat, city.lng], {
+            radius: 8,
+            fillColor: city.city === appState.selectedCity ? "#f59e0b" : "#2563eb",
+            color: "#ffffff",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        });
+        // Show the city name on hover
+        marker.bindTooltip(city.city, {
+            permanent: false,
+            direction: "top",
+            offset: [0, -8],
+            opacity: 0.95
+        });
 
-    // Convert geojson shapes into SVG paths
-    const path = d3.geoPath().projection(projection);
-
-    // Read the .geojson file for Europe
-    d3.json("/static/data/europe.geojson").then(geoData => {
-        svg.selectAll("path.country")
-            .data(geoData.features)
-            .enter()
-            .append("path")
-            .attr("class", "country")
-            .attr("d", path)
-            .attr("fill", "#eaeaea")
-            .attr("stroke", "#999");
-
-        // Hardcode the city coordinates as we do not have them in the dataset
-        const cityCoordinates = {
-            Amsterdam: {lat: 52.3676, lng: 4.9041},
-            Athens: {lat: 37.9838, lng: 23.7275},
-            Barcelona: {lat: 41.3874, lng: 2.1686},
-            Berlin: {lat: 52.5200, lng: 13.4050},
-            Budapest: {lat: 47.4979, lng: 19.0402},
-            Lisbon: {lat: 38.7223, lng: -9.1393},
-            London: {lat: 51.5072, lng: -0.1276},
-            Paris: {lat: 48.8566, lng: 2.3522},
-            Rome: {lat: 41.9028, lng: 12.4964},
-            Vienna: {lat: 48.2082, lng: 16.3738}
-        };
-
-        // Attach coordinates to each city
-        const cities = appState.cityData
-            .map(d => ({
-                ...d,
-                lat: cityCoordinates[d.city]?.lat,
-                lng: cityCoordinates[d.city]?.lng
-            }))
-            .filter(d => d.lat !== undefined && d.lng !== undefined);
-
-        // Draw a clickable point per city
-        svg.selectAll("circle.city-point")
-            .data(cities)
-            .enter()
-            .append("circle")
-            .attr("class", "city-point")
-            .attr("cx", d => projection([d.lng, d.lat])[0])
-            .attr("cy", d => projection([d.lng, d.lat])[1])
-            .attr("r", 7)
-            .attr("fill", d => d.city === appState.selectedCity ? "orange" : "steelblue")
-            .attr("stroke", "black")
-            .style("cursor", "pointer")
-            // On click change the view to city and rerender the map
-            .on("click", function (event, d) {
-                appState.selectedCity = d.city;
-                appState.currentCityListings = appState.listingData.filter(
-                    listing => listing.city === d.city
-                );
-                appState.currentView = "city";
-
-                renderMapView();
-                // Later, also update the city comparison view
-                // renderCityComparison();
+        // Highlight hovered city
+        marker.on("mouseover", function () {
+            this.setStyle({
+                fillColor: "#f59e0b"
             });
+            this.openTooltip();
+        });
+        // Reset marker when hover ends
+        marker.on("mouseout", function () {
+            this.setStyle({
+                fillColor: city.city === appState.selectedCity ? "#f59e0b" : "#2563eb"
+            });
+            this.closeTooltip();
+        });
 
-        // Add labels to the city points
-        svg.selectAll("text.city-label")
-            .data(cities)
-            .enter()
-            .append("text")
-            .attr("class", "city-label")
-            .attr("x", d => projection([d.lng, d.lat])[0] - 20)
-            .attr("y", d => projection([d.lng, d.lat])[1] - 10)
-            .text(d => d.city)
-            .attr("font-size", "14px")
-            .attr("fill", "#222");
+        // Select city and switch to city view
+        marker.on("click", () => {
+            appState.selectedCity = city.city;
+            appState.currentCityListings = appState.listingData.filter(
+                listing => listing.city === city.city
+            );
+            appState.currentView = "city";
+
+            renderMapView();
+            //TODO
+            //renderCityComparison();
+        });
+
+        marker.addTo(leafletLayerGroup);
     });
 }
 
 function renderCityMap() {
-    showLeafletCityView();
+    ensureLeafletMap();
+
+    // Clear the old markers and add the back button for the city view
+    leafletLayerGroup.clearLayers();
+    addBackButton();
 
     const listings = appState.currentCityListings;
 
-    if (!listings || listings.length == 0) {
-        console.log("No listings????")
+    if (!listings || listings.length === 0) {
+        console.log("No listings found for selected city.");
         return;
     }
 
-    // Create the Leaflet map
-    if (!leafletMap) {
-        // Initialize it
-        leafletMap = L.map("leaflet_map");
-
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "&copy; OpenStreetMap contributors"
-        }).addTo(leafletMap);
-
-        leafletLayerGroup = L.layerGroup().addTo(leafletMap);
-    }
-
-    // Remove old listing markers if any
-    leafletLayerGroup.clearLayers();
-
-    // Add the listings
+    // Add a marker for each listing
     listings.forEach(d => {
-        const lat = +d.lat;
-        const lng = +d.lng;
-
-        const marker = L.circleMarker([lat, lng], {
+        const marker = L.circleMarker([+d.lat, +d.lng], {
             radius: 5,
             fillColor: "#2563eb",
             color: "#ffffff",
@@ -137,54 +110,57 @@ function renderCityMap() {
             fillOpacity: 0.75
         });
 
+        // Show basic listing info
+        // TODO decide what exactly we will display
         marker.bindPopup(`
-            <strong>${appState.selectedCity}</strong><br>
+            <strong>Listing ${d.listing_id}</strong><br>
             Price: ${d.listing_price}<br>
             Satisfaction: ${d.guest_satisfaction}<br>
             Capacity: ${d.guest_capacity}
         `);
 
+        // Add the mouseover  and mouseoutbehavior
+        marker.on("mouseover", function () {
+            this.setStyle({
+                radius: 7,
+                fillOpacity: 1
+            });
+        });
+
+        marker.on("mouseout", function () {
+            this.setStyle({
+                radius: 5,
+                fillOpacity: 0.75
+            });
+        });
+
+        // Select listing and update the spider chart
         marker.on("click", () => {
             appState.selectedListing = d;
-            console.log("Selected listing:", d);
+            renderSpiderChart(d);
+            // TODO implement
+            //renderCityComparison();
         });
 
         marker.addTo(leafletLayerGroup);
     });
 
-    // Fit the map to the markers
-    const bounds = L.latLngBounds(
-        listings.map(d => [+d.lat, +d.lng])
-    );
+    // Zoom the map so all listings of the city ae visible at once
+    const bounds = L.latLngBounds(listings.map(d => [+d.lat, +d.lng]));
     leafletMap.fitBounds(bounds, {padding: [30, 30]});
-
-    // This rechecks the container size if it is now visible
-    setTimeout(() => {
-        leafletMap.invalidateSize();
-    }, 0);
-
-    addLeafletBackButton();
 }
 
-// === Helper functions === //
-function showEuropeSvgView() {
-    d3.select("#svg_map").style("display", "block");
-    d3.select("#leaflet_map").style("display", "none");
-}
 
-function showLeafletCityView() {
-    d3.select("#svg_map").style("display", "none");
-    d3.select("#leaflet_map").style("display", "block");
-}
-
-function addLeafletBackButton() {
-    const oldButton = document.getElementById("leaflet-back-button");
-    if (oldButton) oldButton.remove();
+// Helper functions
+function addBackButton() {
+    // To prevent duplicate buttons
+    removeBackButton();
 
     const button = document.createElement("button");
     button.id = "leaflet-back-button";
-    button.textContent = "Back";
+    button.textContent = "Choose different city";
 
+    // Button styling
     button.style.position = "absolute";
     button.style.top = "10px";
     button.style.left = "50px";
@@ -194,6 +170,7 @@ function addLeafletBackButton() {
     button.style.border = "1px solid #888";
     button.style.cursor = "pointer";
 
+    // Reset state and return to Europe view on click
     button.onclick = () => {
         appState.currentView = "europe";
         appState.selectedCity = null;
@@ -201,7 +178,34 @@ function addLeafletBackButton() {
         appState.selectedListing = null;
 
         renderMapView();
+        renderSpiderPlaceholder();
+        // TODO
+        //renderCityComparison();
     };
 
     document.getElementById("left_panel").appendChild(button);
+}
+
+function removeBackButton() {
+    const oldButton = document.getElementById("leaflet-back-button");
+    if (oldButton) oldButton.remove();
+}
+
+function ensureLeafletMap() {
+    // Make sure to create map only once
+    if (!leafletMap) {
+        leafletMap = L.map("leaflet_map", {
+            center: [50, 10],
+            zoom: 4,
+            zoomControl: true
+        });
+
+        // Add OpenStreetMap tiles for the base
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(leafletMap);
+
+        // Layer group so that we can easily clear and redraw markers
+        leafletLayerGroup = L.layerGroup().addTo(leafletMap);
+    }
 }

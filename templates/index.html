@@ -12,8 +12,8 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/europeMap.js') }}"></script>
-    <!--<script src="{{ url_for('static', filename='js/cityComparison.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/listingSpider.js') }}"></script>-->
+    <script src="{{ url_for('static', filename='js/listingSpider.js') }}"></script>
+    <!--<script src="{{ url_for('static', filename='js/cityComparison.js') }}"></script>-->
 </head>
 <body>
 
@@ -23,7 +23,6 @@
 
     <!-- Left side: main map area -->
     <div id="left_panel" class="left_panel">
-        <svg id="svg_map"></svg>
         <div id="leaflet_map"></div>
     </div>
 
@@ -33,9 +32,6 @@
         <!-- Top right: selected listing detail -->
         <div id="top_right_panel" class="top_right_panel">
             <h3>Listing Details</h3>
-            <div id="listing_info">
-                <p>Select a listing to see details.</p>
-            </div>
             <svg id="svg_spider"></svg>
         </div>
 

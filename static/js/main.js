@@ -14,9 +14,9 @@ function initApp(cityData, listingData) {
 
     setupControls();
     renderMapView();
+    renderSpiderPlaceholder();
     // TODO Implement
     //renderCityComparison();
-    //renderSpiderPlaceholder();
 }
 
 // Render either Europe map or city map based on mode
